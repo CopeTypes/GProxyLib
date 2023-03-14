@@ -22,7 +22,12 @@ public class GProxyTester
         _timeout = timeout;
     }
 
-    public async Task<List<GProxy>> TestProxiesAsync()
+    public static GProxyTester Create(IEnumerable<GProxy> proxies, string testUrl, int threads = 200, int timeout = 5)
+    {
+        return new GProxyTester(proxies.ToList(), testUrl, threads, timeout);
+    }
+    
+    public async Task<List<GProxy>> Test()
     {
         var semaphore = new SemaphoreSlim(_threads, _threads);
         var tasks = _proxies.Select(proxy => TestProxyAsync(semaphore, proxy, _timeout)).ToList();
