@@ -1,4 +1,4 @@
-﻿using GProxyLib.api;
+﻿
 using GProxyLib.api.scraper;
 
 namespace GProxyLib
@@ -6,14 +6,9 @@ namespace GProxyLib
     public class GProxyLib
     {
 
-
-        public void Test()
+        public static GProxyScraper Scraper()
         {
-            var proxies = GProxyScraper
-                .Create()
-                .FromProxyScrape(GProxyType.Socks4, 5000, "US")
-                //.From("url", GProxyType.Http)
-                .Scrape();
+            return GProxyScraper.Create();
         }
     }
 }
