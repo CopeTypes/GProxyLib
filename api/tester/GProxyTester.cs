@@ -55,7 +55,7 @@ public class GProxyTester
 
         var proxyHandler = new HttpClientHandler
         {
-            Proxy = new WebProxy(proxy.Ip, int.Parse(proxy.Port)),
+            Proxy = /*new WebProxy(proxy.Ip, int.Parse(proxy.Port))*/ proxy.AsWebProxy(),
             UseProxy = true
         };
 

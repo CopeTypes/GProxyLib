@@ -64,6 +64,8 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="api\client\GClient.cs" />
+        <Compile Include="api\client\GClientMode.cs" />
         <Compile Include="api\GProxy.cs" />
         <Compile Include="api\GProxyType.cs" />
         <Compile Include="api\scraper\GProxyScraper.cs" />

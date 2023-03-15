@@ -54,10 +54,8 @@ namespace GProxyLib.api.scraper
         public GProxyScraper From(string url, GProxyType proxyType)
         {
             if (string.IsNullOrEmpty(url)) throw new ArgumentException("Invalid url provided.");
+            targetUrl = url;
             targetType = proxyType;
-            // todo impl
-            
-
             return this;
         }
 
