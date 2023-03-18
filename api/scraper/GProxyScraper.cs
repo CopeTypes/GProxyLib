@@ -7,8 +7,6 @@ using Newtonsoft.Json;
 
 namespace GProxyLib.api.scraper
 {
-    
-    // scrape proxies from popular sites, and from custom urls
     public class GProxyScraper
     {
 
@@ -29,10 +27,10 @@ namespace GProxyLib.api.scraper
         public enum CountryCode { Any, AF, AX, AL, DZ, AS, AD, AO, AI, AQ, AG, AR, AM, AW, AU, AT, AZ, BS, BH, BD, BB, BY, BE, BZ, BJ, BM, BT, BO, BA, BW, BV, BR, IO, BN, BG, BF, BI, KH, CM, CA, CV, KY, CF, TD, CL, CN, CX, CC, CO, KM, CG, CD, CK, CR, CI, HR, CU, CY, CZ, DK, DJ, DM, DO, EC, EG, SV, GQ, ER, EE, ET, FK, FO, FJ, FI, FR, GF, PF, TF, GA, GM, GE, DE, GH, GI, GR, GL, GD, GP, GU, GT, GG, GN, GW, GY, HT, HM, VA, HN, HK, HU, IS, IN, ID, IR, IQ, IE, IM, IL, IT, JM, JP, JE, JO, KZ, KE, KI, KP, KR, KW, KG, LA, LV, LB, LS, LR, LY, LI, LT, LU, MO, MK, MG, MW, MY, MV, ML, MT, MH, MQ, MR, MU, YT, MX, FM, MD, MC, MN, ME, MS, MA, MZ, MM, NA, NR, NP, NL, AN, NC, NZ, NI, NE, NG, NU, NF, MP, NO, OM, PK, PW, PS, PA, PG, PY, PE, PH, PN, PL, PT, PR, QA, RE, RO, RU, RW, SH, KN, LC, PM, VC, WS, SM, ST, SA, SN, RS, SC, SL, SG, SK, SI, SB, SO, ZA, GS, ES, LK, SD, SR, SJ, SZ, SE, CH, SY, TW, TJ, TZ, TH, TL, TG, TK, TO, TT, TN, TR, TM, TC, TV, UG, UA, AE, GB, US, UM, UY, UZ, VU, VE, VN, VG, VI, WF, EH, YE, ZM, ZW }
 
 
-        private string targetUrl;
-        private GProxyType targetType;
-        private ScrapeType scrapeType;
-        private int maxProxyWait;
+        private string _targetUrl;
+        private GProxyType _targetType;
+        private ScrapeType _scrapeType;
+        private int _maxProxyWait;
         
 
         /// <summary>
@@ -54,8 +52,8 @@ namespace GProxyLib.api.scraper
         public GProxyScraper From(string url, GProxyType proxyType)
         {
             if (string.IsNullOrEmpty(url)) throw new ArgumentException("Invalid url provided.");
-            targetUrl = url;
-            targetType = proxyType;
+            _targetUrl = url;
+            _targetType = proxyType;
             return this;
         }
 
@@ -75,21 +73,21 @@ namespace GProxyLib.api.scraper
         {
             if (timeout == -1) throw new ArgumentException("Invalid timeout.");
             if (timeout < 1000) timeout *= 1000; // if seconds is passed by mistake
-            maxProxyWait = timeout;
+            _maxProxyWait = timeout;
             var requestUrl = "https://api.proxyscrape.com/v2/?request=getproxies";
             switch (proxyType)
             {
                 case GProxyType.Http:
                     requestUrl += "&protocol=http";
-                    targetType = GProxyType.Http;
+                    _targetType = GProxyType.Http;
                     break;
                 case GProxyType.Socks4:
                     requestUrl += "&protocol=socks4";
-                    targetType = GProxyType.Socks4;
+                    _targetType = GProxyType.Socks4;
                     break;
                 case GProxyType.Socks5:
                     requestUrl += "&protocol=socks5";
-                    targetType = GProxyType.Socks5;
+                    _targetType = GProxyType.Socks5;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(proxyType), proxyType, "Invalid GProxyType");
@@ -97,7 +95,6 @@ namespace GProxyLib.api.scraper
 
             requestUrl += $@"&timeout={timeout}";
             if (countryCode != CountryCode.Any) requestUrl += $@"&country={countryCode.ToString()}";
-            
             
             if (proxyType.Equals(GProxyType.Http))
             {
@@ -117,7 +114,7 @@ namespace GProxyLib.api.scraper
                 }
             }
 
-            targetUrl = requestUrl;
+            _targetUrl = requestUrl;
             return this;
         }
 
@@ -128,7 +125,6 @@ namespace GProxyLib.api.scraper
             Medium,
             Slow
         }
-        
         
         //https://geonode.com/free-proxy-list
         /// <summary>
@@ -152,7 +148,7 @@ namespace GProxyLib.api.scraper
         {
             if (timeout == -1) throw new ArgumentNullException(nameof(timeout));
             if (timeout < 1000) timeout *= 1000; // if seconds is passed by mistake
-            maxProxyWait = timeout;
+            _maxProxyWait = timeout;
             if (limit == -1) throw new ArgumentNullException(nameof(limit));
             if (page == -1) throw new ArgumentNullException(nameof(page));
             if (string.IsNullOrEmpty(uptime)) throw new ArgumentNullException(nameof(uptime));
@@ -218,9 +214,9 @@ namespace GProxyLib.api.scraper
                 }
             }
 
-            targetUrl = baseUrl;
-            targetType = proxyType;
-            scrapeType = ScrapeType.Geonode;
+            _targetUrl = baseUrl;
+            _targetType = proxyType;
+            _scrapeType = ScrapeType.Geonode;
             return this;
         }
         
@@ -267,20 +263,20 @@ namespace GProxyLib.api.scraper
         /// <exception cref="ArgumentOutOfRangeException">The ScrapeType hasn't been configured.</exception>
         public List<GProxy> Scrape()
         {
-            if (string.IsNullOrEmpty(targetUrl))
+            if (string.IsNullOrEmpty(_targetUrl))
                 throw new ArgumentException("Proxy source url is not specified, check your code.");
 
             var results = new List<GProxy>();
-            switch (scrapeType)
+            switch (_scrapeType)
             {
                 case ScrapeType.User:
                 case ScrapeType.ProxyScrape:
                 {
                     using (var client = LegitClient())
                     {
-                        var data = client.DownloadString(targetUrl);
+                        var data = client.DownloadString(_targetUrl);
                         var proxyList = data.Split('\n').ToList();
-                        results.AddRange(from proxy in proxyList where !string.IsNullOrEmpty(proxy) && proxy.Contains(":") select proxy.Split(':') into d select new GProxy(d[0], d[1], targetType.ToString()));
+                        results.AddRange(from proxy in proxyList where !string.IsNullOrEmpty(proxy) && proxy.Contains(":") select proxy.Split(':') into d select new GProxy(d[0], d[1], _targetType.ToString()));
                     }
                     
                     return results;
@@ -288,11 +284,11 @@ namespace GProxyLib.api.scraper
                 case ScrapeType.Geonode:
                     using (var client = LegitClient())
                     {
-                        var data = client.DownloadString(targetUrl);
+                        var data = client.DownloadString(_targetUrl);
                         if (string.IsNullOrEmpty(data)) throw new Exception("Empty response from Geonode.");
                         var json = JsonConvert.DeserializeObject<GeonodeResponse>(data);
                         // filtering response time has to be done here since it's not provided in the "api"
-                        results.AddRange(from gp in json.Proxies where gp.ResponseTime <= maxProxyWait select new GProxy(gp.Ip, gp.Port, targetType.ToString()));
+                        results.AddRange(from gp in json.Proxies where gp.ResponseTime <= _maxProxyWait select new GProxy(gp.Ip, gp.Port, _targetType.ToString()));
                     }
 
                     return results;

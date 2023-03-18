@@ -5,13 +5,10 @@ using System.Net.Http;
 namespace GProxyLib.api
 {
     public class GProxy
-    { // Simple class for storing and using a proxy
+    {
         public string Ip { get; set; }
         public string Port { get; set; }
         public GProxyType Protocol { get; set; }
-        
-        
-        
         
         public GProxy(string ip, string port, string type)
         {
@@ -32,8 +29,6 @@ namespace GProxyLib.api
             Port = port;
         }
         
-        // todo helper methods
-
         /// <summary>
         /// Returns this as an instance of WebProxy
         /// </summary>
